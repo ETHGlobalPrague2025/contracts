@@ -1,0 +1,7 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+
+[rpc_endpoints]
+flow_testnet = "https://testnet.evm.nodes.onflow.org"
