@@ -42,8 +42,14 @@ fi
 
 echo -e "${GREEN}Starting deployment to Flow testnet (${RPC_URL})...${NC}"
 
-# Run the deployment script
-forge script script/TrashSystem.s.sol:TrashSystemScript --rpc-url $RPC_URL --broadcast
+# Run the deployment script with optimized settings
+forge script script/TrashSystem.s.sol:TrashSystemScript \
+  --rpc-url $RPC_URL \
+  --broadcast \
+  --slow \
+  --legacy \
+  --gas-price 1000000000 \
+  --timeout 300
 
 # Check if deployment was successful
 if [ $? -eq 0 ]; then

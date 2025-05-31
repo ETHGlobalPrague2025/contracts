@@ -11,47 +11,59 @@ import "../src/TestUSDC.sol";
 /**
  * @title TrashSystemScript
  * @dev Deploys all contracts for the GARBAGE project in a single script
+ * Uses a phased deployment approach to avoid transaction sequencing issues
  */
 contract TrashSystemScript is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = vm.addr(deployerPrivateKey);
+        
+        console.log("Deploying contracts from address:", deployer);
+        
+        // Phase 1: Deploy TestUSDC
         vm.startBroadcast(deployerPrivateKey);
-
-        // Step 1: Deploy TestUSDC
         TestUSDC usdc = new TestUSDC();
+        vm.stopBroadcast();
         console.log("TestUSDC deployed at:", address(usdc));
         
-        // Step 2: Deploy RecyclingSystem with TestUSDC address
+        // Phase 2: Deploy RecyclingSystem
+        vm.startBroadcast(deployerPrivateKey);
         RecyclingSystem recyclingSystem = new RecyclingSystem(address(usdc));
+        vm.stopBroadcast();
         console.log("RecyclingSystem deployed at:", address(recyclingSystem));
         
-        // Step 3: Deploy the TRASH token
+        // Phase 3: Deploy TrashToken
+        vm.startBroadcast(deployerPrivateKey);
         TrashToken trashToken = new TrashToken();
+        vm.stopBroadcast();
         console.log("TrashToken deployed at:", address(trashToken));
         
-        // Step 4: Deploy the TrashNFT contract
+        // Phase 4: Deploy TrashNFT
+        vm.startBroadcast(deployerPrivateKey);
         TrashNFT trashNFT = new TrashNFT();
+        vm.stopBroadcast();
         console.log("TrashNFT deployed at:", address(trashNFT));
         
-        // Step 5: Deploy the QuestSystem contract
+        // Phase 5: Deploy QuestSystem
+        vm.startBroadcast(deployerPrivateKey);
         QuestSystem questSystem = new QuestSystem(
             address(trashToken),
             address(trashNFT),
             address(recyclingSystem)
         );
+        vm.stopBroadcast();
         console.log("QuestSystem deployed at:", address(questSystem));
         
-        // Step 6: Transfer ownership of the token contracts to the QuestSystem
+        // Phase 6: Transfer ownership
+        vm.startBroadcast(deployerPrivateKey);
         trashToken.transferOwnership(address(questSystem));
         trashNFT.transferOwnership(address(questSystem));
-        
         console.log("Ownership of tokens transferred to QuestSystem");
         
-        // Optional: Mint some test USDC to the deployer for testing
+        // Mint test USDC to the deployer
         uint256 mintAmount = 10000 * 10**6; // 10,000 USDC (with 6 decimals)
         usdc.mint(mintAmount);
-        console.log("Minted", mintAmount, "test USDC to deployer:", msg.sender);
-
+        console.log("Minted", mintAmount, "test USDC to deployer:", deployer);
         vm.stopBroadcast();
         
         // Print summary of deployed contracts
