@@ -8,9 +8,24 @@ interface IERC20 {
     function allowance(address owner, address spender) external view returns (uint256);
 }
 
-contract RecyclingSystem {
-    IERC20 public immutable usdc;
+interface IRecyclingSystem {
     enum RecyclableType { PLASTIC, METAL, OTHER }
+
+    function getGarbageCanInfo(uint256 garbageCanId) external view returns (
+        string memory location,
+        uint256 currentValue,
+        bool isActive,
+        bool isLocked,
+        uint256 deploymentTimestamp,
+        uint256 lastEmptiedTimestamp,
+        uint256 totalStaked
+    );
+
+    function getStakerShare(uint256 garbageCanId, address staker) external view returns (uint256);
+}
+
+contract RecyclingSystem is IRecyclingSystem {
+    IERC20 public immutable usdc;
 
     struct Deposit {
         RecyclableType recyclableType;
